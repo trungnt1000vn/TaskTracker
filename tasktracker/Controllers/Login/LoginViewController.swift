@@ -131,6 +131,12 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         })
         
     }
+    
+    @IBAction func registerTapped(_ sender: Any) {
+        let storyboard = UIStoryboard(name: "Register", bundle: nil)
+        let vc = storyboard.instantiateViewController(withIdentifier: "Register")
+        navigationController?.pushViewController(vc, animated: true)
+    }
 }
 extension LoginViewController {
     private func setUpUI(){

@@ -23,7 +23,7 @@ class MainViewController: UIViewController {
         validateAuth()
     }
     private func validateAuth(){
-        if FirebaseAuth.Auth.auth().currentUser == nil {
+        if FirebaseAuth.Auth.auth().currentUser == nil || FirebaseAuth.Auth.auth().currentUser?.isEmailVerified == false{
             let storyboard = UIStoryboard(name: "Login", bundle: nil)
             let vc = storyboard.instantiateViewController(withIdentifier: "Login")
             let nav = UINavigationController(rootViewController: vc)
