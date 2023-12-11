@@ -7,4 +7,5 @@
 struct TaskModel {
     let id : String
     let title: String
+    let note: String
 }
