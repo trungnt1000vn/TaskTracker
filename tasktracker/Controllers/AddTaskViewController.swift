@@ -22,6 +22,7 @@ class AddTaskViewController: UIViewController {
     
     @IBOutlet weak var saveButton: UIButton!
     
+    public var newTaskID = 0
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -41,7 +42,6 @@ class AddTaskViewController: UIViewController {
         let targetDate = datePicker.date
         let newTaskTitle = self.titleField.text ?? ""
         let newTaskNote = self.noteField.text ?? ""
-        var newTaskID = 0
         let alertSuccess = UIAlertController(title: "Add Successfully", message: "Your task has been added successfully!", preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default) { _ in
             self.navigationController?.popViewController(animated: true)
@@ -62,17 +62,18 @@ class AddTaskViewController: UIViewController {
                 let lastTaskID = lastTask.key
 
                 if let lastTaskIDInt = Int(lastTaskID) {
-                    newTaskID = lastTaskIDInt + 1
+                    self.newTaskID = lastTaskIDInt + 1
                     
                 }
             }
             
-            let newTaskRef = taskRef.child(String(newTaskID))
+            let newTaskRef = taskRef.child(String(self.newTaskID))
 
             
             let newTask = [
                 "title": newTaskTitle,
-                "note": newTaskNote
+                "note": newTaskNote,
+                "date": self.dateFormatter(datePicker: self.datePicker)
             ]
             
             newTaskRef.setValue(newTask) { error, _ in
@@ -84,8 +85,8 @@ class AddTaskViewController: UIViewController {
                     self.present(alertSuccess, animated: true)
                 }
             }
+            self.scheduleNoti(title: newTaskTitle, body: newTaskNote, targetDate: targetDate, id: String(self.newTaskID))
         }
-        scheduleTest(title: newTaskTitle, body: newTaskNote, targetDate: targetDate, id: String(newTaskID))
     }
     private func checkPermisson(){
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound], completionHandler: {
@@ -98,7 +99,7 @@ class AddTaskViewController: UIViewController {
             }
         })
     }
-    func scheduleTest(title: String, body: String, targetDate: Date, id: String) {
+    func scheduleNoti(title: String, body: String, targetDate: Date, id: String) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.sound = .default
@@ -115,5 +116,11 @@ class AddTaskViewController: UIViewController {
         }
         )
         print(id)
+    }
+    func dateFormatter(datePicker: UIDatePicker) -> String{
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let dateString = dateFormatter.string(from: datePicker.date)
+        return dateString
     }
 }

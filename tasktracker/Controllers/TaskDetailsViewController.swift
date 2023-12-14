@@ -23,6 +23,11 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
     
     @IBOutlet weak var updateButton: UIButton!
     
+    @IBOutlet weak var datePicker: UIDatePicker!
+    
+    
+    @IBOutlet weak var deleteButton: UIButton!
+    
     public var TaskID : String = ""
     public var taskTitle: String = ""
     public var taskNote: String = ""
@@ -42,6 +47,8 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
         noteLabel.layer.borderWidth = 1
         noteLabel.layer.cornerRadius = 12
         updateButton.layer.cornerRadius = 12
+        deleteButton.layer.cornerRadius = 12
+        
     }
     
     
@@ -50,14 +57,18 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
         if isUpdating == false {
             noteField.isUserInteractionEnabled = true
             titleField.isUserInteractionEnabled = true
+            datePicker.isUserInteractionEnabled = true
             isUpdating = true
             updateButton.setTitle("Save", for: .normal)
         }
         else if isUpdating == true {
             let alertController = UIAlertController(title: "Saving", message: "Are you sure want to save these changes ?", preferredStyle: .alert)
             let alertOK = UIAlertAction(title: "Yes", style: .default, handler: {_ in
-                
-                self.updateTask(taskID: self.TaskID, title: self.titleField.text ?? "", note: self.noteField.text ?? "")
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                let date = dateFormatter.string(from: self.datePicker.date)
+                self.updateTask(taskID: self.TaskID, title: self.titleField.text ?? "", note: self.noteField.text ?? "", date: date)
+                self.updateScheduleNoti(title: self.titleField.text ?? "", body: self.noteField.text ?? "", targetDate: self.datePicker.date, id: self.TaskID)
                 self.updateButton.setTitle("Update", for: .normal)
                 self.noteField.isUserInteractionEnabled = false
                 self.titleField.isUserInteractionEnabled = false
@@ -69,15 +80,30 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
             present(alertController, animated: true)
         }
     }
-    private func updateTask(taskID: String, title: String, note: String){
+    
+    @IBAction func deleteButtonTapped(_ sender: Any) {
+        let alertController = UIAlertController(title: "Deleting", message: "Are you sure to delete this task ?", preferredStyle: .actionSheet)
+        let alertOK = UIAlertAction(title: "Yes", style: .destructive, handler:{_ in 
+            self.deleteTask(taskID: self.TaskID)
+            self.unScheduleNoti(id: self.TaskID)
+            self.navigationController?.popViewController(animated: true)
+        } )
+        let alertCancel = UIAlertAction(title: "No", style: .default, handler: nil)
+        alertController.addAction(alertOK)
+        alertController.addAction(alertCancel)
+        present(alertController, animated: true)
+    }
+    private func updateTask(taskID: String, title: String, note: String, date: String){
         let email = UserDefaults.standard.value(forKey: "email")
         let safeEmail = DatabaseManager.safeEmail(emailAddress: email as! String)
+        
         self.spinner.show(in: view)
         let databaseRef = Database.database().reference()
         let taskRef = databaseRef.child("\(safeEmail)/tasks")
         taskRef.child(taskID).setValue([
             "title": title,
-            "note": note
+            "note": note,
+            "date": date
         ])
         DispatchQueue.main.async {
             self.spinner.dismiss(animated: true)
@@ -93,11 +119,50 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
             guard let value = snapshot.value as? [String:String] else {
                 return
             }
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            if let date = dateFormatter.date(from: value["date"]!) {
+                self.datePicker.date = date
+            }
             self.titleField.text = value["title"]!
             self.noteField.text = value["note"]!
+            
             DispatchQueue.main.async {
                 self.spinner.dismiss(animated: true)
             }
         }
+    }
+    private func deleteTask(taskID: String){
+        let email = UserDefaults.standard.value(forKey: "email")
+        let safeEmail = DatabaseManager.safeEmail(emailAddress: email as! String)
+        
+        let databaseRef = Database.database().reference()
+        let taskRef = databaseRef.child("\(safeEmail)/tasks").child(taskID)
+        taskRef.removeValue()
+    }
+}
+extension TaskDetailsViewController{
+    func updateScheduleNoti(title: String, body: String, targetDate: Date, id: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.sound = .default
+        content.body = body
+        let targetDate = targetDate
+        let trigger = UNCalendarNotificationTrigger(dateMatching: Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: targetDate), repeats: false)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id])
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [id])
+        let request = UNNotificationRequest(identifier: id , content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request, withCompletionHandler:
+                                                { error in
+            if error != nil{
+                print("Something bad has happened !")
+            }
+        }
+        )
+        print(id)
+    }
+    func unScheduleNoti(id: String){
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id])
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [id])
     }
 }
