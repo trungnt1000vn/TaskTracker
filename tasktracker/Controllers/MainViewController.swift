@@ -144,21 +144,21 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         })
     }
-    func scheduleTest() {
-        let content = UNMutableNotificationContent()
-        content.title = "Hello bros"
-        content.sound = .default
-        content.body = "Deo hieu sao lai suspend acc dang nhan voi be yeu"
-        let targetDate = Date().addingTimeInterval(5)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: targetDate), repeats: false)
-        
-        let request = UNNotificationRequest(identifier: "damn_id", content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request, withCompletionHandler:
-        { error in
-            if error != nil{
-                print("Something bad has happened !")
-            }
-        }
-        )
-    }
+//    func scheduleTest() {
+//        let content = UNMutableNotificationContent()
+//        content.title = "Hello bros"
+//        content.sound = .default
+//        content.body = "Deo hieu sao lai suspend acc dang nhan voi be yeu"
+//        let targetDate = Date().addingTimeInterval(5)
+//        let trigger = UNCalendarNotificationTrigger(dateMatching: Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: targetDate), repeats: false)
+//        
+//        let request = UNNotificationRequest(identifier: "damn_id", content: content, trigger: trigger)
+//        UNUserNotificationCenter.current().add(request, withCompletionHandler:
+//        { error in
+//            if error != nil{
+//                print("Something bad has happened !")
+//            }
+//        }
+//        )
+//    }
 }

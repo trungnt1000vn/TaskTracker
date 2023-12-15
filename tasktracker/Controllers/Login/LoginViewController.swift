@@ -25,6 +25,9 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var registerButton: UIButton!
     
+    @IBOutlet weak var forgotButton: UIButton!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpUI()
@@ -135,6 +138,12 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     @IBAction func registerTapped(_ sender: Any) {
         let storyboard = UIStoryboard(name: "Register", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "Register")
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    @IBAction func forgotTapped(_ sender: Any) {
+        let storyboard = UIStoryboard(name: "ForgotPassword", bundle: nil)
+        let vc = storyboard.instantiateViewController(withIdentifier: "ForgotPassword")
         navigationController?.pushViewController(vc, animated: true)
     }
 }
