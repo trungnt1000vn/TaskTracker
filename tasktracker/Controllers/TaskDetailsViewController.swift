@@ -9,6 +9,7 @@ import UIKit
 import FirebaseDatabase
 import JGProgressHUD
 import UserNotifications
+import DropDown
 
 class TaskDetailsViewController: UIViewController, UINavigationControllerDelegate {
     private let spinner = JGProgressHUD(style: .dark)
@@ -28,14 +29,41 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
     
     @IBOutlet weak var deleteButton: UIButton!
     
+    @IBOutlet weak var priorityMenu: UILabel!
     public var TaskID : String = ""
     public var taskTitle: String = ""
     public var taskNote: String = ""
+    public var taskPriority: String = ""
     private var isUpdating: Bool = false
+    let dropDown : DropDown = {
+       let dropDown = DropDown()
+        dropDown.dataSource = [
+            "High",
+            "Middle",
+            "Low"
+        ]
+        return dropDown
+    }()
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        dropDown.anchorView = priorityMenu
         setUpUI()
         observeData(taskID: TaskID)
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(didTapMenu))
+        gesture.numberOfTapsRequired = 1
+        gesture.numberOfTouchesRequired = 1
+        priorityMenu.addGestureRecognizer(gesture)
+        
+        dropDown.selectionAction = {
+            index, title in
+            self.taskPriority = title
+            self.priorityMenu.text = title
+        }
+    }
+    @objc func didTapMenu(){
+        dropDown.show()
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -58,6 +86,7 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
             noteField.isUserInteractionEnabled = true
             titleField.isUserInteractionEnabled = true
             datePicker.isUserInteractionEnabled = true
+            priorityMenu.isUserInteractionEnabled = true
             isUpdating = true
             updateButton.setTitle("Save", for: .normal)
         }
@@ -67,11 +96,12 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
                 let date = dateFormatter.string(from: self.datePicker.date)
-                self.updateTask(taskID: self.TaskID, title: self.titleField.text ?? "", note: self.noteField.text ?? "", date: date)
+                self.updateTask(taskID: self.TaskID, title: self.titleField.text ?? "", note: self.noteField.text ?? "", date: date, priority: self.taskPriority)
                 self.updateScheduleNoti(title: self.titleField.text ?? "", body: self.noteField.text ?? "", targetDate: self.datePicker.date, id: self.TaskID)
                 self.updateButton.setTitle("Update", for: .normal)
                 self.noteField.isUserInteractionEnabled = false
                 self.titleField.isUserInteractionEnabled = false
+                self.priorityMenu.isUserInteractionEnabled = false
                 self.isUpdating = false
             })
             let alertCancel = UIAlertAction(title: "No", style: .destructive, handler: nil)
@@ -93,7 +123,7 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
         alertController.addAction(alertCancel)
         present(alertController, animated: true)
     }
-    private func updateTask(taskID: String, title: String, note: String, date: String){
+    private func updateTask(taskID: String, title: String, note: String, date: String, priority: String){
         let email = UserDefaults.standard.value(forKey: "email")
         let safeEmail = DatabaseManager.safeEmail(emailAddress: email as! String)
         
@@ -103,7 +133,8 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
         taskRef.child(taskID).setValue([
             "title": title,
             "note": note,
-            "date": date
+            "date": date,
+            "priority": priority
         ])
         DispatchQueue.main.async {
             self.spinner.dismiss(animated: true)
@@ -126,7 +157,7 @@ class TaskDetailsViewController: UIViewController, UINavigationControllerDelegat
             }
             self.titleField.text = value["title"]!
             self.noteField.text = value["note"]!
-            
+            self.priorityMenu.text = value["priority"]!
             DispatchQueue.main.async {
                 self.spinner.dismiss(animated: true)
             }

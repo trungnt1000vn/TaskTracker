@@ -77,6 +77,13 @@
                                                     <action selector="deleteButtonTapped:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="W81-oF-tiP"/>
                                                 </connections>
                                             </button>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1e0-D8-EoN">
+                                                <rect key="frame" x="33" y="591" width="344" height="58"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
                                         </subviews>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
@@ -110,6 +117,7 @@
                         <outlet property="deleteButton" destination="EZG-2U-8P3" id="3b5-As-Waa"/>
                         <outlet property="noteField" destination="rCu-y4-0i2" id="WtZ-YL-Xzo"/>
                         <outlet property="noteLabel" destination="ZKB-Ol-cGv" id="JMD-y3-J28"/>
+                        <outlet property="priorityMenu" destination="1e0-D8-EoN" id="lhL-0m-WP3"/>
                         <outlet property="titleField" destination="RV2-Yw-saS" id="Ecb-7T-ixJ"/>
                         <outlet property="titleLabel" destination="tFr-9Z-ESj" id="zsr-lz-NI0"/>
                         <outlet property="updateButton" destination="62k-BQ-BBC" id="msC-n9-lIE"/>

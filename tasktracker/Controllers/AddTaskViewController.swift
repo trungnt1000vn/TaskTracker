@@ -9,7 +9,7 @@ import UIKit
 import Firebase
 import FirebaseDatabase
 import UserNotifications
-
+import DropDown
 class AddTaskViewController: UIViewController {
     
     
@@ -22,13 +22,37 @@ class AddTaskViewController: UIViewController {
     
     @IBOutlet weak var saveButton: UIButton!
     
+    @IBOutlet weak var priorityMenu: UILabel!
+    
     public var newTaskID = 0
+    public var newTaskPriority : String = "Default"
+    let dropDown : DropDown = {
+       let dropDown = DropDown()
+        dropDown.dataSource = [
+            "High",
+            "Middle",
+            "Low"
+        ]
+        return dropDown
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        dropDown.anchorView = priorityMenu
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(didTapMenu))
+        gesture.numberOfTapsRequired = 1
+        gesture.numberOfTouchesRequired = 1
+        priorityMenu.addGestureRecognizer(gesture)
         
-        
+        dropDown.selectionAction = {
+            index, title in
+            self.newTaskPriority = title
+            self.priorityMenu.text = title
+        }
     }
-    
+    @objc func didTapMenu(){
+        dropDown.show()
+    }
     @IBAction func saveButtonTapped(_ sender: Any) {
         guard let email = UserDefaults.standard.value(forKey: "email") as? String else {
             print("No email in User Defaults yet!")
@@ -73,7 +97,8 @@ class AddTaskViewController: UIViewController {
             let newTask = [
                 "title": newTaskTitle,
                 "note": newTaskNote,
-                "date": self.dateFormatter(datePicker: self.datePicker)
+                "date": self.dateFormatter(datePicker: self.datePicker),
+                "priority": self.newTaskPriority
             ]
             
             newTaskRef.setValue(newTask) { error, _ in
